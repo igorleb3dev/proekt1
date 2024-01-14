@@ -1,0 +1,43 @@
+#include "pch.h"
+#include <iostream>
+#include <vector>
+#include <thread>
+#include <cmath>
+#include <mutex>
+
+volatile bool running = true;
+
+void ProcessorLoadThread() {
+    long long i = 0;
+    double result = 0.0;
+
+    while (running) {
+        for (i = 1; i <= 100000; ++i) {
+            result = std::sin(i) * std::cos(i);
+        }
+    }
+}
+
+int main() {
+    int numThreads = std::thread::hardware_concurrency();
+    std::vector<std::thread> threads;
+
+    std::cout << "Number of CPU cores: " << numThreads << std::endl;
+
+    for (int i = 0; i < numThreads; ++i) {
+        threads.emplace_back(ProcessorLoadThread);
+    }
+
+    std::cout << "Press Enter to stop the processor load..." << std::endl;
+    std::cin.get();
+
+    running = false;
+
+    for (auto& thread : threads) {
+        thread.join();
+    }
+
+    std::cout << "Processor load stopped." << std::endl;
+
+    return 0;
+}
